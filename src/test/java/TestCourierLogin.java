@@ -2,15 +2,16 @@
 import io.qameta.allure.Description;
 import io.qameta.allure.junit4.DisplayName;
 import io.restassured.response.Response;
+import static org.apache.http.HttpStatus.*;
 import org.junit.*;
 
 
-public class TestCourierLogin extends BaseTest {
+public class TestCourierLogin extends CourierAPITest {
     //Предварительно создаем курьера
     @Before
     public void createCourier(){
        Courier courier = new Courier("Курьер", "1234");
-       sendPostRequestV1Courier(courier, courierEndpoint);
+       sendPostRequestV1Courier(courier);
     }
 
     //Авторизуемся по корректному логину и паролю
@@ -19,12 +20,12 @@ public class TestCourierLogin extends BaseTest {
     @Description("Test for POST /api/v1/courier/login endpoint")
     public void postCouriersLoginWithFullDataReturns200() {
         //Авторизуемся
-        Response response = sendPostRequestV1Courier(new Courier("Курьер","1234"), courierLoginEndpoint);
+        Response response = sendPostRequestV1CourierLogin(new Courier("Курьер","1234"));
 
         //Сверяем код ответа
-        compareStatusCode(response,200);
+        Assertions.compareStatusCode(response, SC_OK);
         //Убеждаемся, что в ответе возвращается непустое поле id
-        checkFieldInBodyNotNull(response,"id");
+        Assertions.checkFieldInBodyNotNull(response,"id");
         System.out.println("Тело ответа: " + response.body().asString());
     }
 
@@ -38,12 +39,12 @@ public class TestCourierLogin extends BaseTest {
         Object courier = new String("{\"login\": \"Курьер\"}");
 
         //Авторизуемся
-        Response response = sendPostRequestV1Courier(courier, courierLoginEndpoint);
+        Response response = sendPostRequestV1CourierLogin(courier);
 
         //Сверяем код ответа
-        compareStatusCode(response,400);
+        Assertions.compareStatusCode(response,SC_BAD_REQUEST);
         //Убеждаемся, что в ответе возвращается нужный текст ошибки
-        checkValueOfFieldFromBody(response,"message","Недостаточно данных для входа");
+        Assertions.checkValueOfFieldFromBody(response,"message","Недостаточно данных для входа");
     }
 
     //Пытаемся авторизоваться только с паролем
@@ -56,12 +57,12 @@ public class TestCourierLogin extends BaseTest {
         Object courier = new String("{\"password\": \"1234\"}");
 
         //Авторизуемся
-        Response response = sendPostRequestV1Courier(courier, courierLoginEndpoint);
+        Response response = sendPostRequestV1CourierLogin(courier);
 
         //Сверяем код ответа
-        compareStatusCode(response,400);
+        Assertions.compareStatusCode(response,SC_BAD_REQUEST);
         //Убеждаемся, что в ответе возвращается нужный текст ошибки
-        checkValueOfFieldFromBody(response,"message","Недостаточно данных для входа");
+        Assertions.checkValueOfFieldFromBody(response,"message","Недостаточно данных для входа");
     }
 
     //Пытаемся авторизоваться с пустым body
@@ -74,12 +75,12 @@ public class TestCourierLogin extends BaseTest {
         Object courier = new String("{ }");
 
         //Авторизуемся
-        Response response = sendPostRequestV1Courier(courier, courierLoginEndpoint);
+        Response response = sendPostRequestV1CourierLogin(courier);
 
         //Сверяем код ответа
-        compareStatusCode(response,400);
+        Assertions.compareStatusCode(response,SC_BAD_REQUEST);
         //Убеждаемся, что в ответе возвращается нужный текст ошибки
-        checkValueOfFieldFromBody(response,"message","Недостаточно данных для входа");
+        Assertions.checkValueOfFieldFromBody(response,"message","Недостаточно данных для входа");
     }
 
     //Пытаемся авторизоваться с несуществующим логином
@@ -89,24 +90,21 @@ public class TestCourierLogin extends BaseTest {
     public void postCouriersLoginWithNonExistentLoginReturns404() {
 
         //Авторизуемся
-        Response response = sendPostRequestV1Courier(new Courier("Курер","1234"), courierLoginEndpoint);
+        Response response = sendPostRequestV1CourierLogin(new Courier("Курер","1234"));
 
         //Сверяем код ответа
-        compareStatusCode(response,404);
+        Assertions.compareStatusCode(response,SC_NOT_FOUND);
         //Убеждаемся, что в ответе возвращается нужный текст ошибки
-        checkValueOfFieldFromBody(response,"message","Учетная запись не найдена");
+        Assertions.checkValueOfFieldFromBody(response,"message","Учетная запись не найдена");
     }
-
 
     //Удаляем предварительно созданного курьера
     @After
     public void deleteCourier() {
         //Вытащить id курьера
-        CourierId courierIdFromResponse = (getResponsePostV1CourierLogin(new Courier("Курьер","1234"),courierLoginEndpoint));
+        CourierId courierIdFromResponse = (getResponsePostV1CourierLogin(new Courier("Курьер","1234")));
         String id =courierIdFromResponse.getId();
         //Удалить курьера с указанием id
-        sendDeleteRequestV1CourierID(courierEndpoint,id);
+        sendDeleteRequestV1CourierID(id);
     }
-
-
 }

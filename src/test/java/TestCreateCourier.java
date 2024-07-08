@@ -1,24 +1,25 @@
 import io.qameta.allure.Description;
 import io.qameta.allure.junit4.DisplayName;
 import io.restassured.response.Response;
+import static org.apache.http.HttpStatus.*;
 import org.junit.After;
 import org.junit.Test;
 
-public class TestCreateCourier extends BaseTest {
+public class TestCreateCourier extends CourierAPITest {
 
     //Создаем курьера с полным набором данных
     @Test
     @DisplayName("Create courier with a full set of data")
     @Description("Test for POST /api/v1/courier endpoint")
-    public void postCouriersWithFullDataReturns200() {
+    public void postCouriersWithFullDataReturns201() {
         //Создаем объект
         Courier courier = new Courier("Курьер", "1234", "Марья");
         //Направляем POST запрос на /api/v1/courier для создания курьера
-        Response response = sendPostRequestV1Courier(courier, courierEndpoint);
+        Response response = sendPostRequestV1Courier(courier);
         //Сверяем полученный код ответа
-        compareStatusCode(response,201);
+        Assertions.compareStatusCode(response,SC_CREATED);
         //Сверяем body
-        checkBooleanValueOfFieldFromBody(response,"ok",true);
+        Assertions.checkBooleanValueOfFieldFromBody(response,"ok",true);
     }
 
     //Создаем курьера только с обязательными полями
@@ -29,11 +30,11 @@ public class TestCreateCourier extends BaseTest {
         //Создаем объект
         Courier courier2 = new Courier("Иннокентий", "4321");
         //Направляем POST запрос на /api/v1/courier для создания курьера
-        Response response = sendPostRequestV1Courier(courier2, courierEndpoint);
+        Response response = sendPostRequestV1Courier(courier2);
         //Сверяем полученный код ответа
-        compareStatusCode(response,201);
+        Assertions.compareStatusCode(response,SC_CREATED);
         //Сверяем body
-        checkBooleanValueOfFieldFromBody(response,"ok",true);
+        Assertions.checkBooleanValueOfFieldFromBody(response,"ok",true);
     }
 
     //Пытаемся создать курьера только с login
@@ -45,13 +46,13 @@ public class TestCreateCourier extends BaseTest {
         //Cоздаем объект для использования при авторизации
         Object courier = new String("{\"login\": \"Курьер\"}");
 
-        //Авторизуемся
-        Response response = sendPostRequestV1Courier(courier, courierEndpoint);
+        //Создаём курьера
+        Response response = sendPostRequestV1Courier(courier);
 
         //Сверяем код ответа
-        compareStatusCode(response,400);
+        Assertions.compareStatusCode(response,SC_BAD_REQUEST);
         //Убеждаемся, что в ответе возвращается нужный текст ошибки
-        checkValueOfFieldFromBody(response,"message","Недостаточно данных для создания учетной записи");
+        Assertions.checkValueOfFieldFromBody(response,"message","Недостаточно данных для создания учетной записи");
     }
 
     //Пытаемся создать курьера только с password
@@ -63,13 +64,13 @@ public class TestCreateCourier extends BaseTest {
         //Cоздаем объект для использования при авторизации
         Object courier = new String("{\"password\": \"1234\"}");
 
-        //Авторизуемся
-        Response response = sendPostRequestV1Courier(courier, courierEndpoint);
+        //Создаём курьера
+        Response response = sendPostRequestV1Courier(courier);
 
         //Сверяем код ответа
-        compareStatusCode(response,400);
+        Assertions.compareStatusCode(response,SC_BAD_REQUEST);
         //Убеждаемся, что в ответе возвращается нужный текст ошибки
-        checkValueOfFieldFromBody(response,"message","Недостаточно данных для создания учетной записи");
+        Assertions.checkValueOfFieldFromBody(response,"message","Недостаточно данных для создания учетной записи");
     }
 
     //Пытаемся создать курьера только с firstName
@@ -81,13 +82,13 @@ public class TestCreateCourier extends BaseTest {
         //Cоздаем объект для использования при авторизации
         Object courier = new String("{\"firstName\": \"Марья\"}");
 
-        //Авторизуемся
-        Response response = sendPostRequestV1Courier(courier, courierEndpoint);
+        //Создаём курьера
+        Response response = sendPostRequestV1Courier(courier);
 
         //Сверяем код ответа
-        compareStatusCode(response,400);
+        Assertions.compareStatusCode(response,SC_BAD_REQUEST);
         //Убеждаемся, что в ответе возвращается нужный текст ошибки
-        checkValueOfFieldFromBody(response,"message","Недостаточно данных для создания учетной записи");
+        Assertions.checkValueOfFieldFromBody(response,"message","Недостаточно данных для создания учетной записи");
     }
 
     //Пытаемся создать курьера c пустым body
@@ -99,13 +100,13 @@ public class TestCreateCourier extends BaseTest {
         //Cоздаем объект для использования при авторизации
         Object courier = new String("{ }");
 
-        //Авторизуемся
-        Response response = sendPostRequestV1Courier(courier, courierEndpoint);
+        //Создаём курьера
+        Response response = sendPostRequestV1Courier(courier);
 
         //Сверяем код ответа
-        compareStatusCode(response,400);
+        Assertions.compareStatusCode(response,SC_BAD_REQUEST);
         //Убеждаемся, что в ответе возвращается нужный текст ошибки
-        checkValueOfFieldFromBody(response,"message","Недостаточно данных для создания учетной записи");
+        Assertions.checkValueOfFieldFromBody(response,"message","Недостаточно данных для создания учетной записи");
     }
 
     //Пытаемся создать 2 одинаковых курьера
@@ -116,26 +117,25 @@ public class TestCreateCourier extends BaseTest {
         //Создаем объект
         Courier courier = new Courier("Курьер", "1234");
         //Направляем POST запрос на /api/v1/courier для создания курьера
-        sendPostRequestV1Courier(courier, courierEndpoint);
-        Response response = sendPostRequestV1Courier(courier, courierEndpoint);
+        sendPostRequestV1Courier(courier);
+        Response response = sendPostRequestV1Courier(courier);
         //Сверяем полученный код ответа
-        compareStatusCode(response,409);
+        Assertions.compareStatusCode(response,SC_CONFLICT);
         //Сверяем body
-        checkValueOfFieldFromBody(response,"message","Этот логин уже используется");
+        Assertions.checkValueOfFieldFromBody(response,"message","Этот логин уже используется");
     }
 
     @After
     public void deleteCourier() {
         //Удаляем курьера
         //Вытащить id курьера 1
-        CourierId courierIdFromResponse = (getResponsePostV1CourierLogin(new Courier("Курьер","1234"),courierLoginEndpoint));
+        CourierId courierIdFromResponse = (getResponsePostV1CourierLogin(new Courier("Курьер","1234")));
         String id =courierIdFromResponse.getId();
         //Вытащить id курьера 2
-        CourierId courierIdFromResponse2 = (getResponsePostV1CourierLogin(new Courier("Иннокентий","4321"),courierLoginEndpoint));
+        CourierId courierIdFromResponse2 = (getResponsePostV1CourierLogin(new Courier("Иннокентий","4321")));
         String id2 = courierIdFromResponse2.getId();
         //Удалить курьера с указанием id
-        sendDeleteRequestV1CourierID(courierEndpoint,id);
-        sendDeleteRequestV1CourierID(courierEndpoint,id2);
-
+        sendDeleteRequestV1CourierID(id);
+        sendDeleteRequestV1CourierID(id2);
     }
 }

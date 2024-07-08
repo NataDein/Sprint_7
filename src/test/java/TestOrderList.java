@@ -1,25 +1,34 @@
 import io.qameta.allure.Description;
 import io.qameta.allure.junit4.DisplayName;
 import io.restassured.response.Response;
+import static org.apache.http.HttpStatus.*;
 import org.junit.Test;
 
 
 
 
 public class TestOrderList extends BaseTest {
+    protected OrdersAPITest ordersAPITest;
+    protected CourierAPITest courierAPITest;
+
+    public TestOrderList() {
+        super();
+
+        this.ordersAPITest = new OrdersAPITest();
+        this.courierAPITest = new CourierAPITest();
+    }
 
     //Получаем список заказов
     @Test
     @DisplayName("Get a list of orders")
     @Description("Test for GET /api/v1/orders endpoint")
     public void getOrderListReturns200(){
-
         //Создаем переменную response и помещаем в нее ответ на get-запрос
-        Response response = sendGetRequestV1Orders(ordersEndpoint);
+        Response response = ordersAPITest.sendGetRequestV1Orders(null);
         //Сравниваем код ответа
-        compareStatusCode(response,200);
+        Assertions.compareStatusCode(response,SC_OK);
         //Проверяем, что в теле ответа возвращается непустой массив с заказами. Т.е. что в теле ответа возвращается список заказов.
-        checkFieldInBodyNotNull(response,"orders");
+        Assertions.checkFieldInBodyNotNull(response,"orders");
         System.out.println("Тело ответа: " + response.body().asString());
     }
 
@@ -30,35 +39,29 @@ public class TestOrderList extends BaseTest {
     public void getOrderListWithCorrectId() {
         //Создаем курьера
         Courier courier = new Courier("Курьер", "1234", "Марья");
-        sendPostRequestV1Courier(courier, courierEndpoint);
+        courierAPITest.sendPostRequestV1Courier(courier);
         //Получаем id курьера
-        CourierId courierIdFromResponse = (getResponsePostV1CourierLogin(new Courier("Курьер","1234"),courierLoginEndpoint));
-        String courierId =courierIdFromResponse.getId();
+        CourierId courierIdFromResponse = (courierAPITest.getResponsePostV1CourierLogin(new Courier("Курьер","1234")));
+        String courierId = courierIdFromResponse.getId();
         //Создаем заказ
         OrderForRequest order = new OrderForRequest("Мирон","Миронов","улица Миронова 1",4,"+7 999 888 77 66", 5, "2024-07-07", "3 этаж", new String[]{"BLACK"});
-        OrdersTrackFromResponse responseCreateOrder = getResponsePostV1Orders(order, ordersEndpoint);
+        OrdersTrackFromResponse responseCreateOrder = ordersAPITest.getResponsePostV1Orders(order);
         String ordersTrack = responseCreateOrder.getTrack();
         //Ищем заказ по track, чтобы получить его id
-        OrderFromResponse orderFromResponse = getResponseGetV1OrdersTrack(ordersEndpoint, ordersTrack);
+        OrderFromResponse orderFromResponse = ordersAPITest.getResponseGetV1OrdersTrack(ordersTrack);
         String ordersId = orderFromResponse.getOrderFromResponse().getId();
         //Назначаем заказ на курьера
-        sendPutRequestV1OrdersAcceptId(ordersEndpoint, ordersId, courierId);
+        ordersAPITest.sendPutRequestV1OrdersAcceptId(ordersId, courierId);
         //Получаем список заказов
-        String endpoint = makeOrdersEndpoint(courierId);
-        Response response = sendGetRequestV1Orders(endpoint);
+        Response response = ordersAPITest.getOrdersListByCourierId(courierId);
         //Сравниваем код ответа
-        compareStatusCode(response,200);
+        Assertions.compareStatusCode(response,SC_OK);
         //Сверяем, что список не пустой
-        checkFieldInBodyNotNull(response,"orders");
+        Assertions.checkFieldInBodyNotNull(response,"orders");
         System.out.println("Тело ответа: " + response.body().asString());
 
-
-
-
         //Удалить курьера с указанием id
-        sendDeleteRequestV1CourierID(courierEndpoint,courierId);
-
-
+        courierAPITest.sendDeleteRequestV1CourierID(courierId);
     }
 
     //Пытаемся получить список заказов, используя несуществующий id курьера
@@ -66,27 +69,16 @@ public class TestOrderList extends BaseTest {
     @DisplayName("404 Not Found when GET request with incorrect courier id")
     @Description("Test with incorrect id for GET /api/v1/orders?courierId={courierId} endpoint")
     public void getErrorWhenInGetRequestIncorrectID() {
-
         //Формируем endpoint с указанием несуществующего courierID
-        courierId = "1";
-        String endpoint = makeOrdersEndpoint(courierId);
+        String courierId = "1";
 
         //Создаем переменную response и помещаем в нее ответ на get-запрос
-        Response response = sendGetRequestV1Orders(endpoint);
+        Response response = ordersAPITest.getOrdersListByCourierId(courierId);
 
         //Сравниваем код ответа
-        compareStatusCode(response,404);
+        Assertions.compareStatusCode(response,SC_NOT_FOUND);
+
         //Проверяем, что в теле ответа возвращается нужное значение message
-        valueOfField = "Курьер с идентификатором " + courierId + " не найден";
-        checkValueOfFieldFromBody(response,"message",valueOfField);
-
+        Assertions.checkValueOfFieldFromBody(response,"message","Курьер с идентификатором " + courierId + " не найден");
     }
-
-
-
-
-
-
-
-
 }

@@ -4,11 +4,12 @@ import io.restassured.response.Response;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import static org.apache.http.HttpStatus.*;
 
 import static io.restassured.RestAssured.given;
 
 @RunWith(Parameterized.class)
-public class TestCreateOrder extends BaseTest {
+public class TestCreateOrder extends OrdersAPITest {
 
     private final String FIRST_NAME;
     private final String LAST_NAME;
@@ -64,12 +65,10 @@ public class TestCreateOrder extends BaseTest {
         //Создаем переменную response и помещаем в нее ответ на post-запрос
         Response response = sendPostRequestV1Orders(order, ordersEndpoint);
 
-       //Проверяем, статус
-       compareStatusCode(response,201);
+        //Проверяем, статус
+        Assertions.compareStatusCode(response, SC_CREATED);
 
-       //Проверяем, что поле "track" не пустое
-       checkFieldInBodyNotNull(response,"track");
+        //Проверяем, что поле "track" не пустое
+        Assertions.checkFieldInBodyNotNull(response,"track");
     }
-
-
 }
