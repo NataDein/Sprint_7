@@ -7,7 +7,7 @@ import static org.hamcrest.Matchers.equalTo;
 /**
  * Класс общих методов проверки значений в рамках ответов API
  */
-public class Assertions {
+public class MethodsForCheckResponse {
     //Шаги:
     //Сравниваем код ответа
     @Step("Compare status code")

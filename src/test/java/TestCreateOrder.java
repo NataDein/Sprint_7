@@ -9,7 +9,7 @@ import static org.apache.http.HttpStatus.*;
 import static io.restassured.RestAssured.given;
 
 @RunWith(Parameterized.class)
-public class TestCreateOrder extends OrdersAPITest {
+public class TestCreateOrder extends BaseTest {
 
     private final String FIRST_NAME;
     private final String LAST_NAME;
@@ -41,6 +41,7 @@ public class TestCreateOrder extends OrdersAPITest {
         this.DELIVERY_DATE = deliveryDate;
         this.COMMENT = comment;
         this.COLOR = color;
+        this.methodsForTestsOrdersAPI = new MethodsForTestsOrdersAPI();
     }
 
     @Parameterized.Parameters
@@ -63,12 +64,13 @@ public class TestCreateOrder extends OrdersAPITest {
         OrderForRequest order = new OrderForRequest(FIRST_NAME, LAST_NAME, ADDRESS, METRO_STATION, PHONE, RENT_TIME, DELIVERY_DATE, COMMENT, COLOR);
 
         //Создаем переменную response и помещаем в нее ответ на post-запрос
-        Response response = sendPostRequestV1Orders(order, ordersEndpoint);
+
+        Response response = methodsForTestsOrdersAPI.sendPostRequestV1Orders(order);
 
         //Проверяем, статус
-        Assertions.compareStatusCode(response, SC_CREATED);
+        MethodsForCheckResponse.compareStatusCode(response, SC_CREATED);
 
         //Проверяем, что поле "track" не пустое
-        Assertions.checkFieldInBodyNotNull(response,"track");
+        MethodsForCheckResponse.checkFieldInBodyNotNull(response,"track");
     }
 }

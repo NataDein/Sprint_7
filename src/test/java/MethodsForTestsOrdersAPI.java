@@ -1,6 +1,5 @@
 import io.qameta.allure.Step;
 import io.restassured.response.Response;
-import io.restassured.response.ResponseBody;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.message.BasicNameValuePair;
@@ -8,15 +7,15 @@ import org.apache.http.message.BasicNameValuePair;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 import static io.restassured.RestAssured.given;
 
 /**
  * Класс для отправки запросов API Заказов
  */
-public class OrdersAPITest extends BaseTest {
-    protected String ordersEndpoint = "/api/v1/orders";
+public class MethodsForTestsOrdersAPI {
+
+    private String ordersEndpoint = "/api/v1/orders";
 
     public Response getOrdersListByCourierId(String courierId) {
         String endpoint = makeOrdersEndpoint(courierId);
@@ -54,13 +53,13 @@ public class OrdersAPITest extends BaseTest {
 
     //Отправить POST запрос на /api/v1/orders для создания заказа
     @Step("Send POST request to /api/v1/orders")
-    public Response sendPostRequestV1Orders(OrderForRequest order, String endpoint) {
+    public Response sendPostRequestV1Orders(OrderForRequest order) {
         return given()
                 .header("Content-type","application/json")
                 .and()
                 .body(order)
                 .when()
-                .post(endpoint);
+                .post(ordersEndpoint);
     }
 
     //Получить тело ответа на POST запрос на /api/v1/orders
@@ -111,5 +110,13 @@ public class OrdersAPITest extends BaseTest {
     @Step("Send PUT request to /api/v1/orders/accept/:id")
     public void sendPutRequestV1OrdersAcceptId(String ordersId, String courierId) {
         given().delete(ordersEndpoint + "/accept/" + ordersId + "?courierId=" + courierId);
+    }
+
+    public String getOrdersEndpoint() {
+        return ordersEndpoint;
+    }
+
+    public void setOrdersEndpoint(String ordersEndpoint) {
+        this.ordersEndpoint = ordersEndpoint;
     }
 }

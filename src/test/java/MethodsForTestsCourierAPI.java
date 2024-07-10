@@ -6,7 +6,7 @@ import static io.restassured.RestAssured.given;
 /**
  * Класс для отправки запросов API Курьеров
  */
-public class CourierAPITest extends BaseTest {
+public class MethodsForTestsCourierAPI {
     protected String courierEndpoint = "/api/v1/courier";
     protected String courierLoginEndpoint = courierEndpoint + "/login";
 
